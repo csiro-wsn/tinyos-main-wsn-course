@@ -121,7 +121,7 @@ module IPAddressP {
 
     } else if (addr->s6_addr[0] == 0xff) {
       // multicast
-      if ((addr->s6_addr[1] & 0x0f) <= 2) {
+      if ((addr->s6_addr[1] & 0x0f) <= 5) {
         // accept all LL multicast messages
         return TRUE;
       }

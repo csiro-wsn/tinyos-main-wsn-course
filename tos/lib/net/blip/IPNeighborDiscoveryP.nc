@@ -78,8 +78,8 @@ module IPNeighborDiscoveryP {
       }
       return SUCCESS;
     } else if (addr->s6_addr[0] == 0xff) {
-      /* LL - multicast */
-      if ((addr->s6_addr[1] & 0x0f) == 0x02) {
+      /* Link local or site local - multicast */
+      if ((addr->s6_addr[1] & 0x0f) == 0x02 || (addr->s6_addr[1] & 0x0f) == 0x05) {
         link_addr->ieee_mode = IEEE154_ADDR_SHORT;
         link_addr->i_saddr   = IEEE154_BROADCAST_ADDR;
         return SUCCESS;

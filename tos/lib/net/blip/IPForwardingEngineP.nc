@@ -265,7 +265,20 @@ module IPForwardingEngineP {
       /* local delivery */
       // blip_printf("Local delivery\n");
       signal IP.recv(iph, payload, len, meta);
-    } else {
+
+      // check if site local address
+      if (iph->ip6_dst.s6_addr[0] == 0xff &&
+         iph->ip6_dst.s6_addr[1] == 0x05)
+	{
+	   // forward site local address
+
+
+	} else {
+		return;
+	};
+      }
+
+    {
       /* forwarding */
       uint8_t nxt_hdr = IPV6_ROUTING;
       int header_off = call IPPacket.findHeader(&v, iph->ip6_nxt, &nxt_hdr);
