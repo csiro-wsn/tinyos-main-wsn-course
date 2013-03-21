@@ -42,11 +42,16 @@ module PppRouterP {
   event void PppControl.stopDone (error_t error) { }
 
   event void IPControl.startDone (error_t error) {
-    struct in6_addr dhcp6_group;
+    struct in6_addr dhcp6_group, multicast_group, broadcast_addr;
 
     // add a route to the dhcp group on PPP, not the radio (which is the default)
     inet_pton6(DH6ADDR_ALLAGENT, &dhcp6_group);
     call ForwardingTable.addRoute(dhcp6_group.s6_addr, 128, NULL, ROUTE_IFACE_PPP);
+
+    // add a route for site-local multicast through the PAN link
+    inet_pton6("ff05::2", &multicast_group);
+    inet_pton6("fe80::22:ff:fe00:ffff", &broadcast_addr);
+    call ForwardingTable.addRoute(multicast_group.s6_addr, 128, &broadcast_addr, ROUTE_IFACE_154);
 
     // add a default route through the PPP link
     call ForwardingTable.addRoute(NULL, 0, NULL, ROUTE_IFACE_PPP);

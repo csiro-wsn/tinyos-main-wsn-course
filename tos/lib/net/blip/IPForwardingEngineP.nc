@@ -205,8 +205,8 @@ module IPForwardingEngineP {
         pkt->ip6_hdr.ip6_dst.s6_addr[0] != 0xff) {
       blip_printf("Forwarding -- send with local unicast address!\n");
       return FAIL;
-    } else if (call IPAddress.isLLAddress(&pkt->ip6_hdr.ip6_dst) &&
-               (!next_hop_entry || next_hop_entry->prefixlen < 128)) {
+    } else if ((call IPAddress.isLLAddress(&pkt->ip6_hdr.ip6_dst) &&
+               (!next_hop_entry || next_hop_entry->prefixlen < 128)) || (pkt->ip6_hdr.ip6_dst.s6_addr[0] == 0xff && pkt->ip6_hdr.ip6_dst.s6_addr[1] == 0x05)) {
       /* in this case, we need to figure out which interface the
          source address is attached to, and send the packet out on
          that interface. */
@@ -261,24 +261,12 @@ module IPForwardingEngineP {
     /* signaled before *any* processing  */
     signal IPRaw.recv(iph, payload, len, meta);
 
-    if (call IPAddress.isLocalAddress(&iph->ip6_dst)) {
+    if (call IPAddress.isLocalAddress(&iph->ip6_dst) && !(ifindex==ROUTE_IFACE_PPP && (iph->ip6_dst.s6_addr[0] == 0xff &&
+         iph->ip6_dst.s6_addr[1] == 0x05))) {
       /* local delivery */
       // blip_printf("Local delivery\n");
       signal IP.recv(iph, payload, len, meta);
-
-      // check if site local address
-      if (iph->ip6_dst.s6_addr[0] == 0xff &&
-         iph->ip6_dst.s6_addr[1] == 0x05)
-	{
-	   // forward site local address
-
-
-	} else {
-		return;
-	};
-      }
-
-    {
+    } else {
       /* forwarding */
       uint8_t nxt_hdr = IPV6_ROUTING;
       int header_off = call IPPacket.findHeader(&v, iph->ip6_nxt, &nxt_hdr);
