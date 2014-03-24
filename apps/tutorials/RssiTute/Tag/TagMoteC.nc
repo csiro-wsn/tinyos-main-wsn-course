@@ -62,11 +62,10 @@ module TagMoteC {
   event message_t* RssiReceive.receive(message_t *msg, void *payload, uint8_t len) {
     uint8_t id = (uint8_t)(call Ieee154Packet.source(msg)); 
     int16_t rssi = getRssi(msg);
-    uint8_t idx = id - 10;
-    printf("Rssi msg received from node %d: %d dBm\n", id, rssi);
-    if (idx < NUM_NODES) {
-      ntable[idx].rssi_sum = rssi;
-      ntable[idx].num=1;
+    printf("Rssi msg received from node %d: %d dBm\r\n", id, rssi);
+    if (id < NUM_NODES) {
+      ntable[id].rssi_sum = rssi;
+      ntable[id].num=1;
       call Leds.led1Toggle();
     }
     return msg;
@@ -77,16 +76,19 @@ module TagMoteC {
 
   task void sendReport() {
     uint8_t i=0;
-    printf("RSSI Summary: [");
+
     for(i=0; i<NUM_NODES; i++) {
       if(ntable[i].num==0)
         report_msg_data.rssi[i]=UNDEF_RSSI;
       else
         report_msg_data.rssi[i]=ntable[i].rssi_sum/ntable[i].num;
-      printf("%d,",report_msg_data.rssi[i]);
+
     }
-    printf("]\r\n");
-    printfflush();
+    /*printf("RSSI Summary: [");
+      for(i=0; i<NUM_NODES; i++)
+        printf("%d,",report_msg_data.rssi[i]);
+      printf("]\r\n");
+      printfflush();*/
     initNTable();
 
     call ReportService.sendto(&route_dest,&report_msg_data,sizeof(ReportMsg));
