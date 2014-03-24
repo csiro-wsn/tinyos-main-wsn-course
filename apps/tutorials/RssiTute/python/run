@@ -1,0 +1,3 @@
+mig python -python-classname=ReportMsg ../RssiRanging.h ReportMsg -o ReportMsg.py
+#ncg python -python-classname=Constants ../RssiRanging.h RssiRanging.h -o Constants.py
+python Listener.py
